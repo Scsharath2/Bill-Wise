@@ -1,11 +1,15 @@
 import os
 from flask import Blueprint, request, jsonify, current_app
 from werkzeug.utils import secure_filename
-from .tasks import parse_json_async
+
 from .textract_utils import read_parsed_json
 from app.models import Bill, BillItem
 from celery.result import AsyncResult
-from backend.celery_worker import celery_app
+from celery import Celery
+from app.celery_config import celery_app
+
+
+
 
 bp = Blueprint('main', __name__)
 
@@ -17,6 +21,9 @@ def index():
 # ✅ Upload route (asynchronous)
 @bp.route("/upload", methods=["POST"])
 def upload_file():
+    # ✅ Import here to avoid circular import
+    from app.tasks import parse_json_async
+
     try:
         print("Upload route hit!")
 
@@ -28,7 +35,7 @@ def upload_file():
             return jsonify({"error": "No selected file"}), 400
 
         filename = secure_filename(file.filename)
-        save_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+        save_path = os.path.abspath(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
         file.save(save_path)
 
         print(f"Saved file: {save_path}")
@@ -41,7 +48,6 @@ def upload_file():
         import traceback
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
-
 
 # ✅ Celery task result
 @bp.route("/result/<task_id>", methods=["GET"])
@@ -85,7 +91,6 @@ def parse_json():
         db.session.commit()
 
         return jsonify({"message": "Bill saved", "bill_id": new_bill.id}), 201
-
 
 # ✅ List all bills
 @bp.route("/bills", methods=["GET"])

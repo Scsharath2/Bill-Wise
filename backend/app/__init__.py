@@ -1,30 +1,26 @@
 import os
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
-
-db = SQLAlchemy()
+from flask_sqlalchemy import SQLAlchemy
+from app.models import db
 
 def create_app():
     app = Flask(__name__)
-    CORS(app)
 
-    # ✅ Absolute paths for folders
-    base_dir = os.path.abspath(os.path.join(app.root_path, ".."))
-    upload_folder = os.path.join(base_dir, "data", "uploads")
-    parsed_json_folder = os.path.join(base_dir, "data", "parsed_json")
+    # ✅ Define the absolute base path correctly
+    BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
-    os.makedirs(upload_folder, exist_ok=True)
-    os.makedirs(parsed_json_folder, exist_ok=True)
-
-    app.config["UPLOAD_FOLDER"] = upload_folder
-    app.config["PARSED_JSON_FOLDER"] = parsed_json_folder
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///bills.db"
-    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    # ✅ Set all paths with absolute locations
+    app.config.from_mapping(
+        SQLALCHEMY_DATABASE_URI="sqlite:///" + os.path.join(BASE_DIR, "data", "bills.db"),
+        UPLOAD_FOLDER=os.path.join(BASE_DIR, "data", "uploads"),
+        PARSED_JSON_FOLDER=os.path.join(BASE_DIR, "data", "parsed_json")
+    )
 
     db.init_app(app)
+    CORS(app)
 
-    from .routes import bp
+    from app.routes import bp
     app.register_blueprint(bp)
 
     return app

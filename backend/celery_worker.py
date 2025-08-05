@@ -1,5 +1,16 @@
-from celery import Celery
-from config import Config
+from app import create_app
+from app.celery_config import celery_app  # ✅ no circular import
 
-celery_app = Celery("grocery-bill-analyzer", broker=Config.CELERY_BROKER_URL)
-celery_app.conf.result_backend = Config.CELERY_RESULT_BACKEND
+flask_app = create_app()
+celery_app.conf.update(flask_app.config)
+
+# Import task modules *after* app context is ready
+from app.tasks import parse_json_async
+
+# Task context binding
+class ContextTask(celery_app.Task):
+    def __call__(self, *args, **kwargs):
+        with flask_app.app_context():
+            return self.run(*args, **kwargs)
+
+celery_app.Task = ContextTask
