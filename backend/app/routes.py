@@ -8,6 +8,7 @@ from app.models import Bill, BillItem, db
 from celery.result import AsyncResult
 from celery import Celery
 from app.celery_config import celery_app
+from app.models import UserInsight
 
 bp = Blueprint('main', __name__)
 
@@ -224,3 +225,23 @@ def price_trend(item_name):
     return jsonify([
         {"month": r[0], "avg_price": round(r[1], 2)} for r in results
     ])
+
+from flask import Response
+import json
+
+@bp.route("/insights/<int:user_id>", methods=["GET"])
+def get_user_insights(user_id):
+    insight_type = request.args.get('type', 'per_bill')
+    insights = UserInsight.query.filter_by(user_id=user_id, insight_type=insight_type)\
+        .order_by(UserInsight.generated_at.desc()).all()
+
+    data = [
+        {
+            "insight": i.insight_text,
+            "bill_id": i.bill_id,
+            "generated_at": i.generated_at.isoformat()
+        }
+        for i in insights
+    ]
+
+    return Response(json.dumps(data, ensure_ascii=False), mimetype='application/json')
