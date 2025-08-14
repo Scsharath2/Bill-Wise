@@ -5,3 +5,4 @@ boto3==1.34.72
 python-dotenv==1.0.1
 flask_sqlalchemy
 flask-cors
+Flask-JWT-Extended requests

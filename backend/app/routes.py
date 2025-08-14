@@ -1,15 +1,13 @@
 import os
 from flask import Blueprint, request, jsonify, current_app
 from werkzeug.utils import secure_filename
+from sqlalchemy import and_
 
 from .textract_utils import read_parsed_json
-from app.models import Bill, BillItem
+from app.models import Bill, BillItem, db
 from celery.result import AsyncResult
 from celery import Celery
 from app.celery_config import celery_app
-
-
-
 
 bp = Blueprint('main', __name__)
 
@@ -21,12 +19,9 @@ def index():
 # ✅ Upload route (asynchronous)
 @bp.route("/upload", methods=["POST"])
 def upload_file():
-    # ✅ Import here to avoid circular import
     from app.tasks import parse_json_async
-
     try:
         print("Upload route hit!")
-
         if "file" not in request.files:
             return jsonify({"error": "No file part"}), 400
 
@@ -39,7 +34,6 @@ def upload_file():
         file.save(save_path)
 
         print(f"Saved file: {save_path}")
-
         task = parse_json_async.delay(filename)
         print(f"Started task: {task.id}")
 
@@ -69,7 +63,6 @@ def parse_json():
 
     elif request.method == "POST":
         data = request.get_json()
-
         if not data or "items" not in data:
             return jsonify({"error": "Invalid JSON or missing 'items'"}), 400
 
@@ -86,24 +79,48 @@ def parse_json():
             )
             new_bill.items.append(bill_item)
 
-        from app.models import db
         db.session.add(new_bill)
         db.session.commit()
-
         return jsonify({"message": "Bill saved", "bill_id": new_bill.id}), 201
 
-# ✅ List all bills
+# ✅ Enhanced: List bills with pagination and filters
 @bp.route("/bills", methods=["GET"])
 def list_bills():
-    bills = Bill.query.order_by(Bill.created_at.desc()).all()
-    return jsonify([{
+    page = request.args.get("page", 1, type=int)
+    per_page = request.args.get("per_page", 10, type=int)
+    vendor = request.args.get("vendor")
+    min_total = request.args.get("min_total", type=float)
+    max_total = request.args.get("max_total", type=float)
+
+    query = Bill.query
+
+    if vendor:
+        query = query.filter(Bill.vendor.ilike(f"%{vendor}%"))
+    if min_total is not None:
+        query = query.filter(Bill.total >= min_total)
+    if max_total is not None:
+        query = query.filter(Bill.total <= max_total)
+
+    pagination = query.order_by(Bill.created_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
+
+    bills = [{
         "id": bill.id,
         "vendor": bill.vendor,
         "total": bill.total,
         "tax": bill.tax,
         "currency": bill.currency,
         "created_at": bill.created_at.isoformat()
-    } for bill in bills])
+    } for bill in pagination.items]
+
+    return jsonify({
+        "bills": bills,
+        "meta": {
+            "page": pagination.page,
+            "pages": pagination.pages,
+            "total": pagination.total,
+            "per_page": pagination.per_page
+        }
+    })
 
 # ✅ Get one bill by ID
 @bp.route("/bills/<int:bill_id>", methods=["GET"])
@@ -122,7 +139,88 @@ def get_bill(bill_id):
         } for item in bill.items]
     })
 
+# ✅ Update a bill
+@bp.route("/bills/<int:bill_id>", methods=["PUT"])
+def update_bill(bill_id):
+    bill = Bill.query.get(bill_id)
+    if not bill:
+        return jsonify({"error": "Bill not found"}), 404
+
+    data = request.json
+    bill.vendor = data.get("vendor", bill.vendor)
+    bill.total = data.get("total", bill.total)
+    bill.tax = data.get("tax", bill.tax)
+    bill.currency = data.get("currency", bill.currency)
+    #bill.date = data.get("date", bill.date)
+
+    db.session.commit()
+    return jsonify({"message": "Bill updated successfully"}), 200
+
+# ✅ Delete a bill and its items
+@bp.route("/bills/<int:bill_id>", methods=["DELETE"])
+def delete_bill(bill_id):
+    bill = Bill.query.get(bill_id)
+    if not bill:
+        return jsonify({"error": "Bill not found"}), 404
+
+    BillItem.query.filter_by(bill_id=bill_id).delete()
+    db.session.delete(bill)
+    db.session.commit()
+    return jsonify({"message": "Bill and its items deleted successfully"}), 200
+
 # ✅ Optional: handle 404 errors globally
 @bp.errorhandler(404)
 def not_found(e):
     return jsonify({"error": "Resource not found"}), 404
+# ================================
+# 📊 Insight Routes
+# ================================
+
+# 1. Top vendors by total spend
+@bp.route("/insights/top-vendors", methods=["GET"])
+def top_vendors():
+    results = db.session.query(
+        Bill.vendor,
+        db.func.sum(Bill.total).label("total_spent")
+    ).group_by(Bill.vendor).order_by(db.desc("total_spent")).limit(5).all()
+
+    return jsonify([
+        {"vendor": r[0], "total_spent": round(r[1], 2)} for r in results
+    ])
+
+# 2. Monthly spend trend
+@bp.route("/insights/monthly-spend", methods=["GET"])
+def monthly_spend():
+    results = db.session.query(
+        db.func.strftime("%Y-%m", Bill.created_at).label("month"),
+        db.func.sum(Bill.total).label("total")
+    ).group_by("month").order_by("month").all()
+
+    return jsonify([
+        {"month": r[0], "total_spent": round(r[1], 2)} for r in results
+    ])
+
+# 3. Most frequent items purchased
+@bp.route("/insights/frequent-items", methods=["GET"])
+def frequent_items():
+    results = db.session.query(
+        BillItem.name,
+        db.func.count(BillItem.name).label("count")
+    ).group_by(BillItem.name).order_by(db.desc("count")).limit(5).all()
+
+    return jsonify([
+        {"item": r[0], "count": r[1]} for r in results
+    ])
+
+# 4. Price trend for a specific item over time
+@bp.route("/insights/price-trend/<item_name>", methods=["GET"])
+def price_trend(item_name):
+    results = db.session.query(
+        db.func.strftime("%Y-%m", Bill.created_at).label("month"),
+        db.func.avg(BillItem.price).label("avg_price")
+    ).join(Bill).filter(BillItem.name.ilike(f"%{item_name}%")) \
+     .group_by("month").order_by("month").all()
+
+    return jsonify([
+        {"month": r[0], "avg_price": round(r[1], 2)} for r in results
+    ])
