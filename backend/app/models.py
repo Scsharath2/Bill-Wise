@@ -8,6 +8,7 @@ class Bill(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     vendor = db.Column(db.String(255))
     total = db.Column(db.Float)
+    tax = db.Column(db.Float) 
     date = db.Column(db.Date)
     filename = db.Column(db.String(255))
     user_id = db.Column(db.Integer, nullable=False)

@@ -7,7 +7,6 @@ $redisConf = "C:\Program Files\Redis\redis.windows.conf"
 $backendPath = "$root\backend"
 
 # === Start Redis if not already running ===
-# === Start Redis if not already running ===
 $redisRunning = Get-Process redis-server -ErrorAction SilentlyContinue
 if (-not $redisRunning) {
     Write-Host "Starting Redis..."
@@ -24,9 +23,9 @@ $env:Path = "$venvPath\Scripts;" + $env:Path
 Write-Host "Starting Flask..."
 Start-Process powershell -ArgumentList "cd `"$backendPath`"; & '$pythonPath' run.py"
 
-# === Start Celery ===
-Write-Host "Starting Celery..."
-Start-Process powershell -ArgumentList "cd `"$backendPath`"; & '$pythonPath' -m celery -A celery_worker.celery_app worker --loglevel=info"
+# === Start Celery (using --pool=solo for Windows compatibility) ===
+Write-Host "Starting Celery (solo mode)..."
+Start-Process powershell -ArgumentList "cd `"$backendPath`"; & '$pythonPath' -m celery -A celery_worker.celery_app worker --pool=solo --loglevel=info"
 
 # === Open browser ===
 Start-Sleep -Seconds 2
