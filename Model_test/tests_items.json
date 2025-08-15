@@ -1,0 +1,98 @@
+[
+  {
+    "id": "basic_01",
+    "items": [
+      {"name": "Milk 1L", "qty": 1, "unit": "L", "price": 64, "expected_category": "Dairy"},
+      {"name": "Bread Loaf", "qty": 1, "unit": "pc", "price": 45, "expected_category": "Bakery"},
+      {"name": "Apple (Fuji) 500g", "qty": 0.5, "unit": "kg", "price": 120, "expected_category": "Produce"}
+    ]
+  },
+  {
+    "id": "indian_staples_02",
+    "items": [
+      {"name": "Toor Dal 1kg", "qty": 1, "unit": "kg", "price": 165, "expected_category": "Pulses"},
+      {"name": "Basmati Rice 5kg", "qty": 5, "unit": "kg", "price": 699, "expected_category": "Grains"},
+      {"name": "Atta (Whole Wheat) 5kg", "qty": 5, "unit": "kg", "price": 259, "expected_category": "Flour"}
+    ]
+  },
+  {
+    "id": "household_mix_03",
+    "items": [
+      {"name": "Dishwash Bar 200g", "qty": 1, "unit": "pc", "price": 25, "expected_category": "Household"},
+      {"name": "Detergent Powder 1kg", "qty": 1, "unit": "kg", "price": 130, "expected_category": "Household"},
+      {"name": "Banana 1kg", "qty": 1, "unit": "kg", "price": 60, "expected_category": "Produce"}
+    ]
+  },
+  {
+    "id": "protein_veg_04",
+    "items": [
+      {"name": "Eggs (Dozen)", "qty": 12, "unit": "pc", "price": 78, "expected_category": "Protein"},
+      {"name": "Paneer 200g", "qty": 0.2, "unit": "kg", "price": 85, "expected_category": "Dairy"},
+      {"name": "Tomato 1kg", "qty": 1, "unit": "kg", "price": 48, "expected_category": "Produce"}
+    ]
+  },
+  {
+    "id": "beverages_05",
+    "items": [
+      {"name": "Coca-Cola 2L", "qty": 2, "unit": "L", "price": 110, "expected_category": "Beverages"},
+      {"name": "Tropicana Orange 1L", "qty": 1, "unit": "L", "price": 115, "expected_category": "Beverages"},
+      {"name": "Green Tea 25 bags", "qty": 25, "unit": "pc", "price": 145, "expected_category": "Beverages"}
+    ]
+  },
+  {
+    "id": "spices_06",
+    "items": [
+      {"name": "Turmeric Powder 200g", "qty": 0.2, "unit": "kg", "price": 42, "expected_category": "Spices"},
+      {"name": "Red Chilli Powder 200g", "qty": 0.2, "unit": "kg", "price": 58, "expected_category": "Spices"},
+      {"name": "Jeera (Cumin) 100g", "qty": 0.1, "unit": "kg", "price": 48, "expected_category": "Spices"}
+    ]
+  },
+  {
+    "id": "hindi_07",
+    "items": [
+      {"name": "Doodh 1L", "qty": 1, "unit": "L", "price": 64, "expected_category": "Dairy"},
+      {"name": "Anda (6 pcs)", "qty": 6, "unit": "pc", "price": 40, "expected_category": "Protein"},
+      {"name": "Aloo 1kg", "qty": 1, "unit": "kg", "price": 35, "expected_category": "Produce"}
+    ]
+  },
+  {
+    "id": "telugu_08",
+    "items": [
+      {"name": "Pappu 1kg", "qty": 1, "unit": "kg", "price": 150, "expected_category": "Pulses"},
+      {"name": "Perugu 500ml", "qty": 0.5, "unit": "L", "price": 40, "expected_category": "Dairy"},
+      {"name": "Mirchi 250g", "qty": 0.25, "unit": "kg", "price": 30, "expected_category": "Produce"}
+    ]
+  },
+  {
+    "id": "misspellings_09",
+    "items": [
+      {"name": "Brred", "qty": 1, "unit": "pc", "price": 45, "expected_category": "Bakery"},
+      {"name": "Tomatto 1kg", "qty": 1, "unit": "kg", "price": 48, "expected_category": "Produce"},
+      {"name": "Yogurt 400g", "qty": 0.4, "unit": "kg", "price": 60, "expected_category": "Dairy"}
+    ]
+  },
+  {
+    "id": "units_10",
+    "items": [
+      {"name": "Sugar 2kg", "qty": 2, "unit": "kg", "price": 100, "expected_category": "Sweeteners"},
+      {"name": "Salt 1kg", "qty": 1, "unit": "kg", "price": 20, "expected_category": "Essentials"},
+      {"name": "Oil (Sunflower) 1L", "qty": 1, "unit": "L", "price": 130, "expected_category": "Oils"}
+    ]
+  },
+  {
+    "id": "offer_11",
+    "items": [
+      {"name": "Biscuits BOGO (2x100g)", "qty": 2, "unit": "pc", "price": 40, "expected_category": "Snacks"},
+      {"name": "Namkeen 200g", "qty": 0.2, "unit": "kg", "price": 35, "expected_category": "Snacks"},
+      {"name": "Cola Can 330ml", "qty": 0.33, "unit": "L", "price": 35, "expected_category": "Beverages"}
+    ]
+  },
+  {
+    "id": "mixed_receipt_12",
+    "items": [
+      {"name": "Curd 500g", "qty": 0.5, "unit": "kg", "price": 45, "expected_category": "Dairy"},
+      {"name": "Soap 125g", "qty": 1, "unit": "pc", "price": 35, "expected_category": "Household"},
+      {"name": "Coriander Leaves", "qty": 1, "unit": "bunch", "price": 15, "expected_category": "Produce"}
+    ]
+  }
+]

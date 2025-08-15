@@ -1,0 +1,13 @@
+test_id,items_count,accuracy,latency_sec
+basic_01,3,1.0,50.39
+indian_staples_02,3,0.333,28.15
+household_mix_03,3,0.667,30.04
+protein_veg_04,3,0.667,34.73
+beverages_05,3,0.667,33.15
+spices_06,3,0.667,37.17
+hindi_07,3,0.667,30.77
+telugu_08,3,0.667,39.2
+misspellings_09,3,0.667,31.38
+units_10,3,1.0,34.95
+offer_11,3,0.667,34.85
+mixed_receipt_12,3,1.0,33.54
